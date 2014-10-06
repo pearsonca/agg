@@ -1,6 +1,4 @@
 #!/usr/bin/python
-import sys
-
 from argparse import ArgumentParser
 
 if __name__ == "__main__":
@@ -16,7 +14,6 @@ if __name__ == "__main__":
     interval = input_args.interval
     data_buffer = []
     agg_fun = sum
-    num_fun = []
 
     def clean_break(line):
         return line.strip().split(input_args.separator)
@@ -28,27 +25,31 @@ if __name__ == "__main__":
         if (input_args.verbose):
             print(filename)
 
+    def parseHead(file):
+        line = file.readline()
+        ## TODO parse header info here if option set
+        parts = clean_break(line)
+        num_fun = [ (float if p.find('.') != -1 else int) for p in parts]  # look for E as well?
+        buffer = [ f(y) for f, y in zip(num_fun, parts)]
+        return buffer, num_fun
+
+    def parseLine(l, buffer, item_parser, agg):
+        return [agg([b, nf(p)]) for p, nf, b in zip(clean_break(l), item_parser, buffer)]
+
     for filename in input_args.filenames:
         headline(filename)
-        f = open(filename)
-        ## TODO: get the first line, handle it as as special case
-        counter = 0
-        for line in f:
-            parts = clean_break(line)
-            if len(data_buffer) == 0:
-                for p in parts:
-                    if p.find('.') == -1: # it doesn't look like a float
-                        num_fun.append(int)
-                    else:
-                        num_fun.append(float)
-                data_buffer = [num_fun[i](parts[i]) for i in range(len(parts))]
-            else:
-                data_buffer = [agg_fun([data_buffer[i], num_fun[i](parts[i])]) for i in range(len(parts))]
-            counter += 1
-            if counter == interval:
+        with open(filename,'r') as f:
+            ## TODO: get the first line, handle it as as special case
+            data_buffer, number_parser = parseHead(f)
+            counter = 1
+            for line in f:
+                parts = clean_break(line)
+                data_buffer = parseLine(line, data_buffer, number_parser, agg_fun)
+                counter += 1
+                if counter == interval:
+                    output(data_buffer)
+                    data_buffer = []
+                    counter = 0
+            if counter != 0:
+                print("partial aggregation:",counter,"lines.")
                 output(data_buffer)
-                data_buffer = []
-                counter = 0
-        if counter != 0:
-            print("partial aggregation:",counter,"lines.")
-            output(data_buffer)
