@@ -25,7 +25,7 @@ if __name__ == "__main__":
         if (input_args.verbose):
             print(filename)
 
-    def parseHead(file):
+    def parse_head(file):
         line = file.readline()
         ## TODO parse header info here if option set
         parts = clean_break(line)
@@ -33,18 +33,18 @@ if __name__ == "__main__":
         buffer = [ f(y) for f, y in zip(num_fun, parts)]
         return buffer, num_fun
 
-    def parseLine(l, buffer, item_parser, agg):
+    def parse_line(l, buffer, item_parser, agg):
         return [agg([b, nf(p)]) for p, nf, b in zip(clean_break(l), item_parser, buffer)]
 
     for filename in input_args.filenames:
         headline(filename)
         with open(filename,'r') as f:
             ## TODO: get the first line, handle it as as special case
-            data_buffer, number_parser = parseHead(f)
+            data_buffer, number_parser = parse_head(f)
             counter = 1
             for line in f:
                 parts = clean_break(line)
-                data_buffer = parseLine(line, data_buffer, number_parser, agg_fun)
+                data_buffer = parse_line(line, data_buffer, number_parser, agg_fun)
                 counter += 1
                 if counter == interval:
                     output(data_buffer)
