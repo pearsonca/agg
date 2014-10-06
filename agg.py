@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="agg: a command line utility for aggregating lines of output.")
-    parser.add_argument("filenames", metavar="N", nargs="+", help="paths to files for aggregation", default="/dev/stdin", type=str)
+    parser.add_argument("filenames", metavar="N", nargs="*", help="paths to files for aggregation", default=["/dev/stdin"], type=str)
     parser.add_argument("-s", dest="separator", help="separator string", default=" ", type=str)
     parser.add_argument("-i", dest="interval", help="aggregation interval", default=7, type=int)
     parser.add_argument("-v", dest="verbose", action='store_true', help="verbose mode.")
